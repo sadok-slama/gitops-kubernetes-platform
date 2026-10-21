@@ -4,4 +4,4 @@
 # Run `./scripts/configure-repo.sh <github-user>` once to replace the placeholder below.
 image:
   repository: ghcr.io/YOUR_GITHUB_USERNAME/gitops-sample-app
-  tag: "initial" # managed by CI
+  tag: "a3db4bb16333" # managed by CI
