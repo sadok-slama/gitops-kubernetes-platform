@@ -1,0 +1,40 @@
+# AppProject: the security boundary for this platform.
+# It limits WHICH repository can be deployed, WHERE (cluster/namespace) and WHICH resource kinds.
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: sample-platform
+  namespace: argocd
+spec:
+  description: Applications of the GitOps Kubernetes Platform demo
+  sourceRepos:
+    - https://github.com/YOUR_GITHUB_USERNAME/gitops-kubernetes-platform.git
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: sample-app-dev
+  # Cluster-scoped resources: only Namespace is allowed (needed by CreateNamespace=true).
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+  # Namespaced resources the chart is allowed to create. Anything else is rejected by Argo CD.
+  namespaceResourceWhitelist:
+    - group: ""
+      kind: ConfigMap
+    - group: ""
+      kind: Service
+    - group: ""
+      kind: ServiceAccount
+    - group: apps
+      kind: Deployment
+    - group: networking.k8s.io
+      kind: Ingress
+    - group: autoscaling
+      kind: HorizontalPodAutoscaler
+    - group: monitoring.coreos.com
+      kind: ServiceMonitor
+  # Project-scoped RBAC: a read-only role that can be bound to SSO groups or to a token.
+  roles:
+    - name: readonly
+      description: Read-only access to applications of this project
+      policies:
+        - p, proj:sample-platform:readonly, applications, get, sample-platform/*, allow

@@ -1,0 +1,27 @@
+# Development environment settings (Minikube).
+# Applied on top of values.yaml; image repository/tag come from environments/dev/values.yaml.
+
+config:
+  APP_ENVIRONMENT: "dev"
+  APP_MESSAGE: "Deployed with GitOps - Argo CD reconciles this from Git"
+
+ingress:
+  enabled: true
+  className: nginx
+  hosts:
+    - host: sample-app.local
+      paths:
+        - path: /
+          pathType: Prefix
+
+# HPA needs the metrics-server addon (enabled by scripts/setup-minikube.sh).
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 4
+  targetCPUUtilizationPercentage: 70
+
+# Requires kube-prometheus-stack (see monitoring/README.md). Install it before syncing the app.
+metrics:
+  serviceMonitor:
+    enabled: true

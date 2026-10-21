@@ -1,0 +1,33 @@
+# Values for the kube-prometheus-stack Helm chart (Minikube-sized, not for production).
+# Install: see monitoring/README.md
+
+# Pick up ServiceMonitors/PodMonitors/rules from any namespace without a "release" label.
+prometheus:
+  prometheusSpec:
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+    retention: 24h
+    resources:
+      requests:
+        cpu: 200m
+        memory: 400Mi
+
+grafana:
+  # No password is stored in Git: the chart generates a random admin password into the Secret
+  # kube-prometheus-stack-grafana. See monitoring/README.md for the command that reads it.
+  service:
+    type: ClusterIP
+
+alertmanager:
+  enabled: false
+
+# Minikube does not expose these control-plane endpoints; disable to avoid permanently "down" targets.
+kubeEtcd:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeProxy:
+  enabled: false

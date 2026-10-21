@@ -1,0 +1,7 @@
+# Image settings for the dev environment.
+# The `tag` line is updated automatically by the GitHub Actions "update-gitops" job
+# (see .github/workflows/ci.yaml). Do not rename the key: the workflow edits this exact line.
+# Run `./scripts/configure-repo.sh <github-user>` once to replace the placeholder below.
+image:
+  repository: ghcr.io/YOUR_GITHUB_USERNAME/gitops-sample-app
+  tag: "initial" # managed by CI

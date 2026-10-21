@@ -1,0 +1,116 @@
+# Default values for the sample-app chart.
+# Environment-specific overrides live in values-dev.yaml and environments/<env>/values.yaml.
+
+replicaCount: 1
+
+image:
+  # Default points to a locally built image (see scripts/deploy-local.sh).
+  # Real environments override repository and tag in environments/<env>/values.yaml.
+  repository: gitops-sample-app
+  # Empty tag falls back to Chart.appVersion. Environments should set an immutable tag (commit SHA).
+  tag: ""
+  pullPolicy: IfNotPresent
+
+# Secrets for pulling from a private registry (list of existing Secret names).
+imagePullSecrets: []
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  # Name of the ServiceAccount; generated from the release name when empty.
+  name: ""
+  annotations: {}
+
+podAnnotations: {}
+podLabels: {}
+
+# Application configuration, exposed to the container as environment variables through a ConfigMap.
+config:
+  APP_ENVIRONMENT: "default"
+  APP_MESSAGE: "Deployed with GitOps"
+
+# Extra environment variables injected directly in the container spec (name/value pairs).
+extraEnv: []
+#  - name: LOG_LEVEL
+#    value: info
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+ingress:
+  enabled: false
+  className: nginx
+  annotations: {}
+  hosts:
+    - host: sample-app.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 4
+  targetCPUUtilizationPercentage: 70
+
+probes:
+  liveness:
+    path: /health
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 2
+    failureThreshold: 3
+  readiness:
+    path: /health
+    initialDelaySeconds: 3
+    periodSeconds: 5
+    timeoutSeconds: 2
+    failureThreshold: 3
+
+# Gradual rollout: never remove a Pod before its replacement is Ready.
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+# Prometheus Operator ServiceMonitor (requires the monitoring.coreos.com CRDs from kube-prometheus-stack).
+metrics:
+  serviceMonitor:
+    enabled: false
+    interval: 30s
+    path: /metrics
+    # Extra labels on the ServiceMonitor (the monitoring stack in this project selects all, so none are required).
+    labels: {}
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

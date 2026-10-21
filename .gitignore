@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+app/.venv/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local rendering output and secrets (never commit these)
+rendered-*.yaml
+*.kubeconfig
+kubeconfig
+*.pem
+*.key
+.env
+.env.*

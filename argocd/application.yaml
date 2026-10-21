@@ -1,0 +1,39 @@
+# Application: tells Argo CD WHAT to deploy (Helm chart in this repo) and WHERE (cluster/namespace).
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sample-app-dev
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: sample-platform
+  source:
+    repoURL: https://github.com/YOUR_GITHUB_USERNAME/gitops-kubernetes-platform.git
+    targetRevision: main
+    path: helm/sample-app
+    helm:
+      releaseName: sample-app
+      # Later files override earlier ones. Paths are relative to `path` above.
+      valueFiles:
+        - values.yaml
+        - values-dev.yaml
+        - ../../environments/dev/values.yaml   # image tag, updated by CI
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: sample-app-dev
+  syncPolicy:
+    automated:
+      prune: true      # delete resources removed from Git
+      selfHeal: true   # revert manual changes made with kubectl
+    syncOptions:
+      - CreateNamespace=true
+      # Lets the first sync proceed even if the ServiceMonitor CRD is not installed yet;
+      # the retry below succeeds once kube-prometheus-stack is installed.
+      - SkipDryRunOnMissingResource=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 30s
+        factor: 2
+        maxDuration: 5m

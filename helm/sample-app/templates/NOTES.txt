@@ -1,0 +1,5 @@
+{{ include "sample-app.fullname" . }} has been deployed.
+
+Reach it locally with:
+  kubectl -n {{ .Release.Namespace }} port-forward svc/{{ include "sample-app.fullname" . }} 8080:{{ .Values.service.port }}
+  curl http://localhost:8080/health
