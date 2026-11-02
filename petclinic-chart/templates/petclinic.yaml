@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "petclinic.fullname" . }}
+  labels:
+    {{- include "petclinic.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.petclinic.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "petclinic.fullname" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "petclinic.fullname" . }}
+    spec:
+      containers:
+        - name: petclinic
+          image: "{{ .Values.petclinic.image.repository }}:{{ .Values.petclinic.image.tag }}"
+          imagePullPolicy: {{ .Values.petclinic.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: postgres
+            - name: POSTGRES_URL
+              value: "jdbc:postgresql://{{ include "petclinic.fullname" . }}-postgres:5432/{{ .Values.postgres.database }}"
+            - name: POSTGRES_USER
+              value: {{ .Values.postgres.username | quote }}
+            - name: POSTGRES_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.databaseSecret.name }}
+                  key: POSTGRES_PASS
+          startupProbe:
+            tcpSocket:
+              port: 8080
+            periodSeconds: 10
+            failureThreshold: 30
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.petclinic.resources | nindent 12 }}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "petclinic.fullname" . }}
+  labels:
+    {{- include "petclinic.labels" . | nindent 4 }}
+spec:
+  selector:
+    app: {{ include "petclinic.fullname" . }}
+  ports:
+    - name: http
+      port: {{ .Values.petclinic.service.port }}
+      targetPort: http
+  type: ClusterIP
