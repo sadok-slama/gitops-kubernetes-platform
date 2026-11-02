@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: petclinic-gitops
+  namespace: argocd
+
+spec:
+  project: petclinic-platform
+
+  source:
+    repoURL: https://github.com/sadok-slama/gitops-kubernetes-platform.git
+    targetRevision: main
+    path: petclinic-chart
+    helm:
+      releaseName: petclinic-helm
+      valueFiles:
+        - values.yaml
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default

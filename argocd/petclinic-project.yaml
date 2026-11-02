@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: petclinic-platform
+  namespace: argocd
+spec:
+  description: GitOps management of Spring PetClinic
+
+  sourceRepos:
+    - https://github.com/sadok-slama/gitops-kubernetes-platform.git
+
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: default
+
+  namespaceResourceWhitelist:
+    - group: ""
+      kind: Service
+    - group: apps
+      kind: Deployment
+    - group: apps
+      kind: StatefulSet
